@@ -28,9 +28,10 @@ To fetch a specific version (say 0.32.0), use CHART_VERSION
 make CHART_VERSION=0.32.0 fetch
 ```
 
-Also, remember to change the `version` in `charts/tekton-dashboard/Chart.yaml`.
-The `app_version` will be set to the `CHART_VERSION` automatically by the makefile if a `CHART_VERSION` is specified.
-For latest set `app_version` to the latest tekton version from the [tekton release page](https://github.com/tektoncd/dashboard/releases) and not `latest`.
+#### Versioning
+`appVersion` is automatically set during the `make fetch` process. Set as the version pulled from Tekton.
+
+`chartVersion` is automatically set during the [publish workflow](.github/workflows/publish.yml). Set based on the semantic commits within the causal PR.
 
 ### Other use cases
 
