@@ -42,13 +42,14 @@ oauth2-proxy:
         secretName: example.com
 # args passed to the dashboard container
 args:
-  port: "9097"
-  logout-url: ""
-  pipelines-namespace: tekton-pipelines
-  triggers-namespace: tekton-pipelines
-  read-only: "true"
-  log-level: info
-  log-format: json
-  namespace: ""
-  stream-logs: "true"
+  default-namespace: ""
   external-logs: ""
+  log-format: json
+  log-level: info
+  logout-url: ""
+  namespaces: ""
+  pipelines-namespace: tekton-pipelines
+  port: "9097"
+  read-only: "true"
+  stream-logs: "true"
+  triggers-namespace: tekton-pipelines

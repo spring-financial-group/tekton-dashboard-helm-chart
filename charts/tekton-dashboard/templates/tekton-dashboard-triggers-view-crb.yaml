@@ -6,11 +6,11 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-dashboard
     rbac.dashboard.tekton.dev/subject: tekton-dashboard
-  name: tekton-dashboard-tenant
+  name: tekton-dashboard-triggers-view
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tekton-dashboard-tenant
+  name: tekton-triggers-aggregate-view
 subjects:
   - kind: ServiceAccount
     name: tekton-dashboard

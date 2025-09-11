@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/component: dashboard
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-dashboard
-  name: tekton-dashboard-tenant
+  name: tekton-dashboard-tenant-view
 rules:
   - apiGroups:
       - dashboard.tekton.dev
@@ -22,30 +22,6 @@ rules:
       - namespaces
       - pods
       - pods/log
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - tekton.dev
-    resources:
-      - tasks
-      - taskruns
-      - pipelines
-      - pipelineruns
-      - customruns
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - triggers.tekton.dev
-    resources:
-      - eventlisteners
-      - interceptors
-      - triggerbindings
-      - triggers
-      - triggertemplates
     verbs:
       - get
       - list
