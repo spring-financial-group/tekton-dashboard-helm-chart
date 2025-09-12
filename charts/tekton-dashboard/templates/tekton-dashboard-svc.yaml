@@ -7,9 +7,9 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/name: dashboard
     app.kubernetes.io/part-of: tekton-dashboard
-    app.kubernetes.io/version: v0.35.0
-    dashboard.tekton.dev/release: v0.35.0
-    version: v0.35.0
+    app.kubernetes.io/version: v0.61.0
+    dashboard.tekton.dev/release: v0.61.0
+    version: v0.61.0
   name: tekton-dashboard
 spec:
   ports:
