@@ -1,9 +1,22 @@
 # tekton-ingress example with TLS enabled
 ingress:
+  enabled: true
   host: tekton-dashboard.acme.com
   tls:
     enabled: true
     secretName: example.com
+httpRoute:
+  enabled: false
+  host: tekton-dashboard.acme.com
+  pathPrefix: /
+  annotations: {}
+  # Gateways the HTTPRoute attaches to. At least one parentRef is required
+  # when enabled. namespace and sectionName are optional.
+  # parentRefs:
+  # - name: my-gateway
+  #   namespace: gateway-system
+  #   sectionName: https
+  parentRefs: []
 # this is the auth host for the proxy (tekton-auth.example.com) and used to template ingress annotations for redirection
 # only add an authHost if deploying oauth2-proxy
 authHost:
@@ -24,6 +37,27 @@ oauth2-proxy:
     github-org: your-org
     cookie-domain: .example.com
     whitelist-domain: .example.com
+  apiGateway:
+    enabled: false
+    # Gateway the oauth2-proxy HTTPRoute attaches to.
+    # namespace and sectionName are optional.
+    # gatewayRef:
+    #   name: my-gateway
+    #   namespace: gateway-system
+    #   sectionName: https
+    gatewayRef: {}
+    rules:
+    - name: tekton-dashboard
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+    hostnames:
+    - example.com
+    # Additional labels to add to the HTTPRoute
+    labels: {}
+    # Additional annotations to add to the HTTPRoute
+    annotations: {}
   ingress:
     enabled: true
     path: /oauth2
