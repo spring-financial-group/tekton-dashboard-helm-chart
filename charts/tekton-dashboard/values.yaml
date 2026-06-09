@@ -1,3 +1,5 @@
+# Expose the dashboard via EITHER ingress OR httpRoute (not both). See README for the
+# supported dashboard/oauth2-proxy exposure combinations.
 # tekton-ingress example with TLS enabled
 ingress:
   enabled: true
@@ -11,12 +13,32 @@ httpRoute:
   pathPrefix: /
   annotations: {}
   # Gateways the HTTPRoute attaches to. At least one parentRef is required
-  # when enabled. namespace and sectionName are optional.
+  #
   # parentRefs:
   # - name: my-gateway
   #   namespace: gateway-system
   #   sectionName: https
   parentRefs: []
+  # External authentication for the HTTPRoute, delegated to a provider-specific resource
+  # This is the equivalent of the nginx auth-url/auth-signin annotations
+  auth:
+    enabled: false # Leave disabled when routing without auth, or when auth is enforced outside this chart
+    # Provider that renders the in-chart auth resource
+    provider: envoyGateway # Only "envoyGateway" is supported for now
+    # Auth backend. Defaults to bundled oauth2-proxy Service
+    backend:
+      serviceName: ""
+      port: 80
+    # envoyGateway settings
+    envoyGateway:
+      authPath: /oauth2/auth
+      failOpen: false
+      # headers the auth backend returns that are forwarded to the dashboard
+      headersToBackend:
+      - x-auth-request-user
+      - x-auth-request-email
+      - x-auth-request-access-token
+      - authorization
 # this is the auth host for the proxy (tekton-auth.example.com) and used to template ingress annotations for redirection
 # only add an authHost if deploying oauth2-proxy
 authHost:
@@ -37,27 +59,31 @@ oauth2-proxy:
     github-org: your-org
     cookie-domain: .example.com
     whitelist-domain: .example.com
-  apiGateway:
+  # Expose sign-in and callback endpoints via Gateway API.
+  gatewayApi:
     enabled: false
-    # Gateway the oauth2-proxy HTTPRoute attaches to.
-    # namespace and sectionName are optional.
+    # Gateway the oauth2-proxy HTTPRoute attaches to. Should match
+    # httpRoute.parentRefs[0]. namespace and sectionName are optional.
     # gatewayRef:
     #   name: my-gateway
     #   namespace: gateway-system
     #   sectionName: https
     gatewayRef: {}
+    # Route only the /oauth2 prefix to oauth2-proxy. The backendRef defaults to the
+    # oauth2-proxy Service, so it does not need to be specified here.
     rules:
-    - name: tekton-dashboard
-      matches:
+    - matches:
       - path:
           type: PathPrefix
-          value: /
+          value: /oauth2
+    # Must match httpRoute.host so /oauth2/* lives alongside the dashboard.
     hostnames:
     - example.com
     # Additional labels to add to the HTTPRoute
     labels: {}
     # Additional annotations to add to the HTTPRoute
     annotations: {}
+  # Expose sign-in and callback endpoints via Ingress
   ingress:
     enabled: true
     path: /oauth2
@@ -68,6 +94,7 @@ oauth2-proxy:
       # add or remove cert manger dependent on use case. Add clusterIssuer lets-encrypt below
       cert-manager.io/cluster-issuer: letsencrypt-yourEnv
       kubernetes.io/tls-acme: "true"
+    # Must match httpRoute.host so /oauth2/* lives alongside the dashboard.
     hosts:
       - example.com
     tls:

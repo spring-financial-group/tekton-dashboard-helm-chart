@@ -1,0 +1,21 @@
+{{- if and .Values.httpRoute.enabled .Values.httpRoute.auth.enabled (eq .Values.httpRoute.auth.provider "envoyGateway") }}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: tekton-dashboard
+  namespace: '{{ .Release.Namespace }}'
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: tekton-dashboard
+  extAuth:
+    failOpen: {{ .Values.httpRoute.auth.envoyGateway.failOpen }}
+    http:
+      backendRefs:
+      - name: {{ .Values.httpRoute.auth.backend.serviceName | default (printf "%s-oauth2-proxy" .Release.Name) }}
+        port: {{ .Values.httpRoute.auth.backend.port }}
+      path: {{ .Values.httpRoute.auth.envoyGateway.authPath }}
+      headersToBackend:
+        {{- toYaml .Values.httpRoute.auth.envoyGateway.headersToBackend | nindent 8 }}
+{{- end }}
