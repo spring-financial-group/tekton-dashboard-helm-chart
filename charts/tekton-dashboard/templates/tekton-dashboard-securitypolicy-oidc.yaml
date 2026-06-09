@@ -1,0 +1,46 @@
+{{- if and .Values.httpRoute.enabled .Values.httpRoute.auth.oidc.enabled }}
+{{- if .Values.httpRoute.auth.extAuth.enabled }}
+{{- fail "httpRoute.auth.extAuth and httpRoute.auth.oidc are mutually exclusive; enable at most one" }}
+{{- end }}
+{{- $oidc := .Values.httpRoute.auth.oidc }}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: tekton-dashboard
+  namespace: '{{ .Release.Namespace }}'
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: tekton-dashboard
+  # Native Envoy Gateway OIDC (no oauth2-proxy required).
+  oidc:
+    provider:
+      issuer: {{ required "httpRoute.auth.oidc.issuer is required when httpRoute.auth.oidc.enabled is true" $oidc.issuer | quote }}
+      {{- with $oidc.authorizationEndpoint }}
+      authorizationEndpoint: {{ . | quote }}
+      {{- end }}
+      {{- with $oidc.tokenEndpoint }}
+      tokenEndpoint: {{ . | quote }}
+      {{- end }}
+      {{- with $oidc.endSessionEndpoint }}
+      endSessionEndpoint: {{ . | quote }}
+      {{- end }}
+    clientID: {{ required "httpRoute.auth.oidc.clientID is required when httpRoute.auth.oidc.enabled is true" $oidc.clientID | quote }}
+    clientSecret:
+      name: {{ required "httpRoute.auth.oidc.clientSecret.name is required when httpRoute.auth.oidc.enabled is true" $oidc.clientSecret.name }}
+      key: {{ $oidc.clientSecret.key | default "client_secret" }}
+    {{- with $oidc.scopes }}
+    scopes:
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+    redirectURL: {{ $oidc.redirectURL | default (printf "https://%s/oauth2/callback" .Values.httpRoute.host) | quote }}
+    {{- with $oidc.logoutPath }}
+    logoutPath: {{ . | quote }}
+    {{- end }}
+    forwardAccessToken: {{ $oidc.forwardAccessToken }}
+    {{- with $oidc.cookieConfig }}
+    cookieConfig:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+{{- end }}

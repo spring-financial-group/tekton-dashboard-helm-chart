@@ -1,0 +1,28 @@
+{{- if and .Values.httpRoute.enabled .Values.httpRoute.auth.extAuth.enabled }}
+{{- if .Values.httpRoute.auth.oidc.enabled }}
+{{- fail "httpRoute.auth.extAuth and httpRoute.auth.oidc are mutually exclusive; enable at most one" }}
+{{- end }}
+{{- $extAuth := .Values.httpRoute.auth.extAuth }}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: tekton-dashboard
+  namespace: '{{ .Release.Namespace }}'
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: tekton-dashboard
+  # External authorization delegated to oauth2-proxy.
+  extAuth:
+    failOpen: {{ $extAuth.failOpen }}
+    {{- with $extAuth.headersToBackend }}
+    headersToBackend:
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+    http:
+      path: {{ $extAuth.path | quote }}
+      backendRefs:
+      - name: {{ $extAuth.backendRef.name | default (printf "%s-oauth2-proxy" .Release.Name) }}
+        port: {{ $extAuth.backendRef.port }}
+{{- end }}
