@@ -22,7 +22,7 @@ gateway:
   # External authentication
   # Rendered as an Envoy Gateway SecurityPolicy targeting the dashboard HTTPRoute
   auth:
-    enabled: false # Leave disabled when routing without auth
+    enabled: false
     # Which SecurityPolicy spec to render: oidc | extAuth
     type: oidc
     # oidc: OIDC connector to an identity provider via Envoy Gateway (eg. Okta, Keycloak, Dex, etc)
